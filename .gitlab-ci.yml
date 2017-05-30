@@ -3,10 +3,10 @@ image: golang
 before_script:
   - echo $SSH_PRIVATE_KEY
   - eval $(ssh-agent -s)
-  - ssh-add <(echo "$SSH_PRIVATE_KEY")
+  - echo "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_gitlab_rsa
   - mkdir -p ~/.ssh
   - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
-  - echo -e "Host git.nulana.com\n\tPort 2221\n\n" >> ~/.ssh/config
+  - echo -e "Host git.nulana.com\n\tHostName git.nulana.com\n\tPort 2221\n\tUser git\n\tIdentityFile ~/.ssh/deploy_gitlab_rsa\n\n" >> ~/.ssh/config
   - cat ~/.ssh/config
   - export CURRENT_BUILD_PATH=$(pwd)
   - rm -rf $HOME/gopath
