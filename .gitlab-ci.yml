@@ -14,6 +14,8 @@ before_script:
   - go version
   - go env
   - which go
+  - git clone git@git.nulana.com:bobrnor/sqlsugar.git
+  - git clone git@git.nulana.com:bobrnor/json-ep.git
 
 test:
   script:
