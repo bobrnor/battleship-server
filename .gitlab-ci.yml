@@ -1,10 +1,14 @@
 image: golang
 
 before_script:
+  - echo $SSH_PRIVATE_KEY
   - eval $(ssh-agent -s)
   - ssh-add <(echo "$SSH_PRIVATE_KEY")
   - mkdir -p ~/.ssh
-  - '[[ -f /.dockerenv ]] && echo "$SSH_SERVER_HOSTKEYS" > ~/.ssh/known_hosts'
+  - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
+  - cat ~/.ssh/config
+  - git clone git@git.nulana.com:bobrnor/sqlsugar.git
+  - git clone git@git.nulana.com:bobrnor/json-ep.git
   - export CURRENT_BUILD_PATH=$(pwd)
   - rm -rf $HOME/gopath
   - mkdir -p $HOME/gopath/src/git.nulana.com/bobrnor/battleship-server
@@ -14,8 +18,6 @@ before_script:
   - go version
   - go env
   - which go
-  - git clone git@git.nulana.com:bobrnor/sqlsugar.git
-  - git clone git@git.nulana.com:bobrnor/json-ep.git
 
 test:
   script:
