@@ -3,6 +3,7 @@ image: golang
 before_script:
   - echo $SSH_PRIVATE_KEY
   - eval $(ssh-agent -s)
+  - touch ~/.ssh/deploy_gitlab_rsa
   - echo "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_gitlab_rsa
   - mkdir -p ~/.ssh
   - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
