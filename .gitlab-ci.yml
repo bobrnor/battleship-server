@@ -6,7 +6,7 @@ before_script:
   - ssh-add <(echo "$SSH_PRIVATE_KEY")
   - mkdir -p ~/.ssh
   - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
-  - echo -e "Host git.nulana.com\n\tPort 2221\n\n" >> ~/.ssh/config'
+  - echo -e "Host git.nulana.com\n\tPort 2221\n\n" >> ~/.ssh/config
   - cat ~/.ssh/config
   - git clone git@git.nulana.com:bobrnor/how-to.git
   - git clone git@git.nulana.com:bobrnor/sqlsugar.git
