@@ -21,6 +21,7 @@ before_script:
 test:
   script:
     - cp -R $CURRENT_BUILD_PATH/* $HOME/gopath/src/git.nulana.com/bobrnor/battleship-server
-    - cd $HOME/gopath/src/git.nulana.com/bobrnor/battleship-server
+    - cd $HOME/gopath
     - go get -insecure ...
+    - cd $HOME/gopath/src/git.nulana.com/bobrnor/battleship-server
     - go test ./...
