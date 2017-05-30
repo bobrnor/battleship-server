@@ -8,6 +8,9 @@ before_script:
   - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
   - echo -e "Host git.nulana.com\n\tPort 2221\n\n" >> ~/.ssh/config
   - cat ~/.ssh/config
+  - git clone git@git.nulana.com:bobrnor/how-to.git
+  - git clone git@git.nulana.com:bobrnor/sqlsugar.git
+  - git clone git@git.nulana.com:bobrnor/json-ep.git
   - export CURRENT_BUILD_PATH=$(pwd)
   - rm -rf $HOME/gopath
   - mkdir -p $HOME/gopath/src/git.nulana.com/bobrnor/battleship-server
