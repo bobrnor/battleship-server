@@ -4,7 +4,7 @@ before_script:
   - eval $(ssh-agent -s)
   - ssh-add <(echo "$SSH_PRIVATE_KEY")
   - mkdir -p ~/.ssh
-  - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
+  - '[[ -f /.dockerenv ]] && echo "$SSH_SERVER_HOSTKEYS" > ~/.ssh/known_hosts'
   - export CURRENT_BUILD_PATH=$(pwd)
   - rm -rf $HOME/gopath
   - mkdir -p $HOME/gopath/src/git.nulana.com/bobrnor/battleship-server
