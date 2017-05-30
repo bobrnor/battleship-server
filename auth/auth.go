@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/packer/common/uuid"
 	"go.uber.org/zap"
 
-	"git.nulana.com/bobrnor/battleship/db"
+	"git.nulana.com/bobrnor/battleship-server/db"
 )
 
 type authData struct {
