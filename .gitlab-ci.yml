@@ -7,6 +7,7 @@ before_script:
   - mkdir -p ~/.ssh
   - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
   - cat ~/.ssh/config
+  - ssh git.nulana.com
   - git clone --progress --verbose git@git.nulana.com:bobrnor/how-to.git
   - git clone git@git.nulana.com:bobrnor/sqlsugar.git
   - git clone git@git.nulana.com:bobrnor/json-ep.git
