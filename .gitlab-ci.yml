@@ -1,24 +1,23 @@
 image: golang
 
 before_script:
+  - eval $(ssh-agent -s)
+  - ssh-add <(echo "$SSH_PRIVATE_KEY")
+  - mkdir -p ~/.ssh
+  - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
   - export CURRENT_BUILD_PATH=$(pwd)
   - rm -rf $HOME/gopath
-  - mkdir -p $HOME/gopath/src/git.nulana.com/bobrnor/battleship-server.git
+  - mkdir -p $HOME/gopath/src/git.nulana.com/bobrnor/battleship-server
   - export GOPATH=$HOME/gopath
   - export PATH=$PATH:$GOPATH/bin
   - echo $PATH
   - go version
   - go env
   - which go
-  - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
-  - eval $(ssh-agent -s)
-  - ssh-add <(echo "$SSH_PRIVATE_KEY")
-  - mkdir -p ~/.ssh
-  - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
 
 test:
   script:
-    - cp -R $CURRENT_BUILD_PATH/* $HOME/gopath/src/git.nulana.com/bobrnor/battleship-server.git
-    - cd $HOME/gopath/src/git.nulana.com/bobrnor/battleship-server.git
+    - cp -R $CURRENT_BUILD_PATH/* $HOME/gopath/src/git.nulana.com/bobrnor/battleship-server
+    - cd $HOME/gopath/src/git.nulana.com/bobrnor/battleship-server
     - go get ...
     - go test ./...
