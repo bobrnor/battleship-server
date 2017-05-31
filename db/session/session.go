@@ -1,8 +1,7 @@
-package db
+package session
 
 import (
 	sqlsugar "git.nulana.com/bobrnor/sqlsugar.git"
-	"go.uber.org/zap"
 )
 
 type Session struct {
@@ -19,12 +18,12 @@ var (
 func init() {
 	insert = sqlsugar.Insert((*Session)(nil)).Into("sessions")
 	if insert.Error() != nil {
-		zap.S().Fatalw("Can't make select query", insert.Error())
+		panic(insert.Error())
 	}
 
 	update = sqlsugar.Update("sessions").SetAll((*Session)(nil)).Where("`id` = ?")
 	if update.Error() != nil {
-		zap.S().Fatalw("Can't make select query", update.Error())
+		panic(update.Error())
 	}
 }
 

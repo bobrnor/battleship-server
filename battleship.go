@@ -6,6 +6,7 @@ import (
 	"go.uber.org/zap"
 
 	"git.nulana.com/bobrnor/battleship-server/auth"
+	_ "git.nulana.com/bobrnor/battleship-server/db"
 )
 
 func main() {
