@@ -18,7 +18,7 @@ func init() {
 		panic(insert.Error())
 	}
 
-	find = sqlsugar.Select((*Requests)(nil)).From([]string{"requests"})
+	find = sqlsugar.Select((*Request)(nil)).From([]string{"requests"})
 	if find.Error() != nil {
 		panic(find.Error())
 	}
