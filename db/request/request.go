@@ -33,9 +33,9 @@ func All() ([]Request, error) {
 }
 
 func (r *Request) Save() error {
-	results, err := insert.Exec(nil, c)
+	results, err := insert.Exec(nil, r)
 	if err == nil {
-		c.ID, err = results.LastInsertId()
+		r.ID, err = results.LastInsertId()
 	}
 	return err
 }
