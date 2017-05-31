@@ -29,7 +29,7 @@ func All() ([]Request, error) {
 	if err != nil {
 		return []Request{}, err
 	}
-	return i.([]Request)
+	return i.([]Request), nil
 }
 
 func (r *Request) Save() error {
