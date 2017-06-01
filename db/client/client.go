@@ -1,6 +1,9 @@
 package client
 
-import sqlsugar "git.nulana.com/bobrnor/sqlsugar.git"
+import (
+	sqlsugar "git.nulana.com/bobrnor/sqlsugar.git"
+	"github.com/pkg/errors"
+)
 
 type Client struct {
 	ID  int64  `column:"id"`
@@ -41,6 +44,7 @@ func (c *Client) Save() error {
 	results, err := insert.Exec(nil, c)
 	if err == nil {
 		c.ID, err = results.LastInsertId()
+		err = errors.Wrap(err, "Can't get last insert id")
 	}
 	return err
 }

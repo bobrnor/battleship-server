@@ -1,61 +1,109 @@
 package auth
 
 import (
+	"fmt"
 	"net/http"
 
-	jsonep "git.nulana.com/bobrnor/json-ep.git"
+	"github.com/pkg/errors"
+
 	"go.uber.org/zap"
 
 	"git.nulana.com/bobrnor/battleship-server/db/client"
+	jsonep "git.nulana.com/bobrnor/json-ep.git"
 )
 
-type authData struct {
+type params struct {
 	ClientUID string `json:"client_uid"`
 }
 
-func Handler() http.HandlerFunc {
-	var data authData
-	return jsonep.Decorate(handle, &data)
+type handler struct {
+	p      *params
+	client *client.Client
+
+	err error
 }
 
-func handle(data interface{}) interface{} {
-	zap.S().Infow("received",
-		"data", data,
-	)
+func Handler() http.HandlerFunc {
+	var p params
+	return jsonep.Decorate(handle, &p)
+}
 
-	auth, ok := data.(*authData)
+func handle(i interface{}) interface{} {
+	zap.S().Info("Received", i)
+	h := handler{}
+	return h.handle(i)
+}
+
+func (h *handler) handle(i interface{}) interface{} {
+	h.fetchParams(i)
+	h.authClient()
+	return h.response()
+}
+
+func (h *handler) fetchParams(i interface{}) {
+	p, ok := i.(*params)
 	if !ok {
-		zap.S().Fatalw("Auth data has wrong struct", data)
-		return map[string]interface{}{
-			"status": -1,
-		}
+		h.err = errors.WithStack(fmt.Errorf("Wrong parameters type %T %v", i, i))
+		return
 	}
 
-	if len(auth.ClientUID) == 0 {
-		zap.S().Warnw("Expected not empty `client_uid` field", auth)
-		return map[string]interface{}{
-			"status": -1,
-		}
+	if len(p.ClientUID) == 0 {
+		h.err = errors.WithStack(fmt.Errorf("`client_uid` expected but empty %v", p))
+		return
 	}
 
-	c, err := client.FindByUID(auth.ClientUID)
-	if err != nil {
-		zap.S().Errorw("Error during finding client", err)
-		return map[string]interface{}{
-			"status": -1,
-		}
+	h.p = p
+}
+
+func (h *handler) authClient() {
+	if h.err != nil {
+		return
 	}
 
+	c := h.fetchClient()
 	if c == nil {
-		newClient := client.Client{
-			UID: auth.ClientUID,
-		}
-		if err := newClient.Save(); err != nil {
-			zap.S().Errorw("Error during saving client", err)
-		}
+		c = h.createNewClient()
 	}
 
+	h.client = c
+}
+
+func (h *handler) fetchClient() *client.Client {
+	if h.err != nil {
+		return nil
+	}
+
+	c, err := client.FindByUID(h.p.ClientUID)
+	if err != nil {
+		h.err = err
+		return nil
+	}
+
+	return c
+}
+
+func (h *handler) createNewClient() *client.Client {
+	if h.err != nil {
+		return nil
+	}
+
+	newClient := client.Client{
+		UID: h.p.ClientUID,
+	}
+	if err := newClient.Save(); err != nil {
+		h.err = err
+		return nil
+	}
+
+	return &newClient
+}
+
+func (h *handler) response() interface{} {
+	status := 0
+	if h.err != nil {
+		status = -1
+	}
 	return map[string]interface{}{
-		"status": 0,
+		"status": status,
 	}
 }

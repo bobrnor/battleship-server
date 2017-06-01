@@ -1,64 +1,119 @@
 package game
 
 import (
+	"fmt"
 	"net/http"
 
-	"git.nulana.com/bobrnor/battleship-server/db/client"
-	jsonep "git.nulana.com/bobrnor/json-ep.git"
 	"go.uber.org/zap"
+
+	"github.com/hashicorp/packer/common/uuid"
+	"github.com/pkg/errors"
+
+	"git.nulana.com/bobrnor/battleship-server/db/client"
+	"git.nulana.com/bobrnor/battleship-server/db/room"
+	jsonep "git.nulana.com/bobrnor/json-ep.git"
 )
 
-type searchData struct {
+type params struct {
 	ClientUID string `json:"client_uid"`
 }
 
-func Handler() http.HandlerFunc {
-	var data searchData
-	return jsonep.Decorate(handle, &data)
+type handler struct {
+	p *params
+	c *client.Client
+
+	err error
 }
 
-func handle(data interface{}) interface{} {
-	zap.S().Infow("received",
-		"data", data,
-	)
+func Handler() http.HandlerFunc {
+	var p params
+	return jsonep.Decorate(handle, &p)
+}
 
-	search, ok := data.(*searchData)
+func handle(i interface{}) interface{} {
+	zap.S().Info("Received", i)
+	h := handler{}
+	return h.handler(i)
+}
+
+func (h *handler) handler(i interface{}) interface{} {
+	h.fetchParams(i)
+	h.fetchClient()
+	return h.response()
+}
+
+func (h *handler) fetchParams(i interface{}) {
+	p, ok := i.(*params)
 	if !ok {
-		zap.S().Fatalw("Search data has wrong struct", data)
-		return map[string]interface{}{
-			"status": -1,
-		}
+		h.err = errors.WithStack(fmt.Errorf("Wrong parameters type %T %v", i, i))
+		return
 	}
 
-	if len(search.ClientUID) == 0 {
-		zap.S().Warnw("Expected not empty `client_uid` field", search)
-		return map[string]interface{}{
-			"status": -1,
-		}
+	if len(p.ClientUID) == 0 {
+		h.err = errors.WithStack(fmt.Errorf("`client_uid` expected but empty %v", p))
+		return
 	}
 
-	c, err := client.FindByUID(search.ClientUID)
+	h.p = p
+}
+
+func (h *handler) fetchClient() {
+	if h.err != nil {
+		return
+	}
+
+	c, err := client.FindByUID(h.p.ClientUID)
 	if err != nil {
-		zap.S().Errorw("Error during finding client", err)
-		return map[string]interface{}{
-			"status": -1,
-		}
+		h.err = err
+		return
 	}
 
 	if c == nil {
-		zap.S().Errorw("Client not found", err)
-		return map[string]interface{}{
-			"status": -1,
-		}
+		h.err = errors.WithStack(fmt.Errorf("Client not found `%v`", h.p.ClientUID))
+		return
 	}
 
-	// TODO: find request or create new (!!!: concurrency)
-	// if request found:
-	// - delete it
-	// - create room
-	// - return room uid
+	h.c = c
+}
 
-	return map[string]interface{}{
-		"status": 0,
+func (h *handler) doSearch() {
+	if h.err != nil {
+		return
+	}
+
+	if c := DefaultPlaylist().PopAny(); c != nil {
+		newRoom := room.Room{
+			UID:       uuid.TimeOrderedUUID(),
+			ClientID1: c.ID,
+			ClientID2: h.c.ID,
+		}
+		if err := newRoom.Save(nil); err != nil {
+			h.err = err
+			DefaultPlaylist().Push(c)
+		}
+	} else {
+		DefaultPlaylist().Wait(h.c)
 	}
 }
+
+func (h *handler) response() interface{} {
+	status := 0
+	if h.err != nil {
+		status = -1
+	}
+	return map[string]interface{}{
+		"status": status,
+	}
+}
+
+//
+// 	// TODO: find request or create new (!!!: concurrency)
+// 	// if request found:
+// 	// - delete it
+// 	// - create room
+// 	// - return room uid
+//
+// 	return map[string]interface{}{
+// 		"status": 0,
+// 	}
+// }

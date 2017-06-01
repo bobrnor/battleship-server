@@ -2,6 +2,7 @@ package session
 
 import (
 	sqlsugar "git.nulana.com/bobrnor/sqlsugar.git"
+	"github.com/pkg/errors"
 )
 
 type Session struct {
@@ -35,6 +36,7 @@ func (s *Session) Save() error {
 		results, err := insert.Exec(nil, s)
 		if err == nil {
 			s.ID, err = results.LastInsertId()
+			err = errors.Wrap(err, "Can't get last insert id")
 		}
 		return err
 	}
