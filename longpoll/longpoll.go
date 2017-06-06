@@ -1,27 +1,36 @@
-package auth
+package longpoll
 
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/pkg/errors"
 
 	"go.uber.org/zap"
 
-	"git.nulana.com/bobrnor/battleship-server/db/client"
 	jsonep "git.nulana.com/bobrnor/json-ep.git"
+	longpoll "git.nulana.com/bobrnor/longpoll.git"
+	seqqueue "git.nulana.com/bobrnor/seqqueue.git"
 )
 
 type params struct {
 	ClientUID string `json:"client_uid"`
+	Seq       uint64 `json:"seq"`
+	Initial   bool   `json:"initial"`
 }
 
 type handler struct {
-	p      *params
-	client *client.Client
+	p     *params
+	entry *seqqueue.Entry
 
 	err error
 }
+
+const (
+	// Timeout = 1 * time.Minute
+	Timeout = 5 * time.Second
+)
 
 func Handler() http.HandlerFunc {
 	return jsonep.Decorate(handle, (*params)(nil))
@@ -35,7 +44,7 @@ func handle(i interface{}) interface{} {
 
 func (h *handler) handle(i interface{}) interface{} {
 	h.fetchParams(i)
-	h.authClient()
+	h.poll()
 	return h.response()
 }
 
@@ -54,56 +63,42 @@ func (h *handler) fetchParams(i interface{}) {
 	h.p = p
 }
 
-func (h *handler) authClient() {
+func (h *handler) poll() {
 	if h.err != nil {
 		return
 	}
 
-	c := h.fetchClient()
-	if c == nil {
-		c = h.createNewClient()
+	lp := longpoll.DefaultLongpoll()
+	q := lp.Register(h.p.ClientUID)
+	var c <-chan *seqqueue.Entry
+	if h.p.Initial {
+		c = q.OutWithoutSeq()
+	} else {
+		c = q.Out(h.p.Seq)
 	}
 
-	h.client = c
-}
-
-func (h *handler) fetchClient() *client.Client {
-	if h.err != nil {
-		return nil
+	select {
+	case h.entry = <-c:
+	case <-time.After(Timeout):
 	}
-
-	c, err := client.FindByUID(h.p.ClientUID)
-	if err != nil {
-		h.err = err
-		return nil
-	}
-
-	return c
-}
-
-func (h *handler) createNewClient() *client.Client {
-	if h.err != nil {
-		return nil
-	}
-
-	newClient := client.Client{
-		UID: h.p.ClientUID,
-	}
-	if err := newClient.Save(); err != nil {
-		h.err = err
-		return nil
-	}
-
-	return &newClient
 }
 
 func (h *handler) response() interface{} {
-	status := 0
 	if h.err != nil {
-		zap.S().Errorf("Error %+v", h.err)
-		status = -1
+		return map[string]interface{}{
+			"status": -1,
+		}
 	}
+
+	if h.entry != nil {
+		return map[string]interface{}{
+			"seq":     h.entry.Seq,
+			"message": h.entry.Value,
+			"status":  0,
+		}
+	}
+
 	return map[string]interface{}{
-		"status": status,
+		"status": 0,
 	}
 }

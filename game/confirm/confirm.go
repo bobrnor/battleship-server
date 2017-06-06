@@ -1,48 +1,49 @@
-package game
+package confirm
 
 import (
 	"fmt"
 	"net/http"
 
-	"go.uber.org/zap"
-
-	"github.com/hashicorp/packer/common/uuid"
-	"github.com/pkg/errors"
-
 	"git.nulana.com/bobrnor/battleship-server/db/client"
 	"git.nulana.com/bobrnor/battleship-server/db/room"
 	jsonep "git.nulana.com/bobrnor/json-ep.git"
+	"github.com/pkg/errors"
+	"go.uber.org/zap"
 )
 
 type params struct {
 	ClientUID string `json:"client_uid"`
+	RoomUID   string `json:"room_uid"`
 }
 
 type handler struct {
 	p *params
 	c *client.Client
+	r *room.Room
 
 	err error
 }
 
 func Handler() http.HandlerFunc {
-	var p params
-	return jsonep.Decorate(handle, &p)
+	return jsonep.Decorate(handle, (*params)(nil))
 }
 
 func handle(i interface{}) interface{} {
-	zap.S().Info("Received", i)
+	zap.S().Infof("handling confirm request %+v", i)
 	h := handler{}
-	return h.handler(i)
+	return h.handle(i)
 }
 
-func (h *handler) handler(i interface{}) interface{} {
+func (h *handler) handle(i interface{}) interface{} {
 	h.fetchParams(i)
 	h.fetchClient()
+	h.fetchRoom()
+	h.confirm()
 	return h.response()
 }
 
 func (h *handler) fetchParams(i interface{}) {
+	zap.S().Infof("fetching params %+v", i)
 	p, ok := i.(*params)
 	if !ok {
 		h.err = errors.WithStack(fmt.Errorf("Wrong parameters type %T %v", i, i))
@@ -62,6 +63,8 @@ func (h *handler) fetchClient() {
 		return
 	}
 
+	zap.S().Infof("fetching client %+v", h.p.ClientUID)
+
 	c, err := client.FindByUID(h.p.ClientUID)
 	if err != nil {
 		h.err = err
@@ -76,44 +79,53 @@ func (h *handler) fetchClient() {
 	h.c = c
 }
 
-func (h *handler) doSearch() {
+func (h *handler) fetchRoom() {
 	if h.err != nil {
 		return
 	}
 
-	if c := DefaultPlaylist().PopAny(); c != nil {
-		newRoom := room.Room{
-			UID:       uuid.TimeOrderedUUID(),
-			ClientID1: c.ID,
-			ClientID2: h.c.ID,
-		}
-		if err := newRoom.Save(nil); err != nil {
-			h.err = err
-			DefaultPlaylist().Push(c)
-		}
-	} else {
-		DefaultPlaylist().Wait(h.c)
+	r, err := room.FindByUID(nil, h.p.RoomUID)
+	if err != nil {
+		h.err = err
+		return
+	}
+
+	if r == nil {
+		h.err = errors.New("Room not found")
+		return
+	}
+
+	if r.ClientID1 != h.c.ID && r.ClientID2 != h.c.ID {
+		h.err = errors.New("Founded room is not for that client")
+		return
+	}
+
+	h.r = r
+}
+
+func (h *handler) confirm() {
+	if h.err != nil {
+		return
+	}
+
+	if h.r.ClientID1 == h.c.ID {
+		h.r.Client1State = room.ConfirmedState
+	} else if h.r.ClientID2 == h.c.ID {
+		h.r.Client2State = room.ConfirmedState
+	}
+
+	if err := h.r.Save(nil); err != nil {
+		h.err = err
 	}
 }
 
 func (h *handler) response() interface{} {
 	status := 0
 	if h.err != nil {
+		zap.S().Errorf("Error %+v", h.err)
 		status = -1
 	}
 	return map[string]interface{}{
 		"status": status,
 	}
 }
-
-//
-// 	// TODO: find request or create new (!!!: concurrency)
-// 	// if request found:
-// 	// - delete it
-// 	// - create room
-// 	// - return room uid
-//
-// 	return map[string]interface{}{
-// 		"status": 0,
-// 	}
-// }

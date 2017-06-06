@@ -7,6 +7,9 @@ import (
 
 	"git.nulana.com/bobrnor/battleship-server/auth"
 	_ "git.nulana.com/bobrnor/battleship-server/db"
+	"git.nulana.com/bobrnor/battleship-server/game/confirm"
+	"git.nulana.com/bobrnor/battleship-server/game/search"
+	"git.nulana.com/bobrnor/battleship-server/longpoll"
 )
 
 func main() {
@@ -23,7 +26,10 @@ func configLogger() {
 
 func configMux() *http.ServeMux {
 	mux := http.NewServeMux()
+	mux.HandleFunc("/longpoll", longpoll.Handler())
 	mux.HandleFunc("/auth", auth.Handler())
+	mux.HandleFunc("/game/search", search.Handler())
+	mux.HandleFunc("/game/confirm", confirm.Handler())
 	return mux
 }
 
