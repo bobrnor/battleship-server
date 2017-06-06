@@ -92,6 +92,7 @@ func (h *handler) fetchClient() {
 	h.c = c
 }
 
+// TODO: looks like a crap
 func (h *handler) poll() {
 	if h.err != nil {
 		return
@@ -107,6 +108,7 @@ func (h *handler) poll() {
 		c = q.Out(h.p.Seq)
 	}
 
+	// TODO: especialy this
 	playlist.Push(h.c)
 
 	select {

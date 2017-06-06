@@ -41,6 +41,7 @@ func (r *Rooms) Register(clients []*client.Client) (string, error) {
 		return "", errors.WithStack(WrongClientNumber)
 	}
 
+	// TODO: do it using N:N rel.
 	room := room.Room{
 		UID:          uuid.TimeOrderedUUID(),
 		ClientID1:    clients[0].ID,
