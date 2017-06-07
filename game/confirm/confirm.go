@@ -6,7 +6,7 @@ import (
 
 	"git.nulana.com/bobrnor/battleship-server/db/client"
 	"git.nulana.com/bobrnor/battleship-server/db/room"
-	jsonep "git.nulana.com/bobrnor/json-ep.git"
+	json "git.nulana.com/bobrnor/json.git"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
 )
@@ -25,7 +25,7 @@ type handler struct {
 }
 
 func Handler() http.HandlerFunc {
-	return jsonep.Decorate(handle, (*params)(nil))
+	return json.Decorate(handle, (*params)(nil))
 }
 
 func handle(i interface{}) interface{} {

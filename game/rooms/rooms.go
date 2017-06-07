@@ -16,7 +16,7 @@ type Rooms struct{}
 
 const (
 	dispatcherTick      = 5 * time.Second
-	confirmationTimeout = 1 * time.Minute
+	confirmationTimeout = 10 * time.Second
 )
 
 var (

@@ -9,7 +9,7 @@ import (
 	"go.uber.org/zap"
 
 	"git.nulana.com/bobrnor/battleship-server/db/client"
-	jsonep "git.nulana.com/bobrnor/json-ep.git"
+	json "git.nulana.com/bobrnor/json.git"
 )
 
 type params struct {
@@ -24,7 +24,7 @@ type handler struct {
 }
 
 func Handler() http.HandlerFunc {
-	return jsonep.Decorate(handle, (*params)(nil))
+	return json.Decorate(handle, (*params)(nil))
 }
 
 func handle(i interface{}) interface{} {

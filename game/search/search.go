@@ -10,7 +10,7 @@ import (
 	"github.com/pkg/errors"
 
 	"git.nulana.com/bobrnor/battleship-server/db/client"
-	jsonep "git.nulana.com/bobrnor/json-ep.git"
+	json "git.nulana.com/bobrnor/json.git"
 	longpoll "git.nulana.com/bobrnor/longpoll.git"
 	seqqueue "git.nulana.com/bobrnor/seqqueue.git"
 )
@@ -39,7 +39,7 @@ var (
 )
 
 func Handler() http.HandlerFunc {
-	return jsonep.Decorate(handle, (*params)(nil))
+	return json.Decorate(handle, (*params)(nil))
 }
 
 func handle(i interface{}) interface{} {

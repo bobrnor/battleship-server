@@ -57,12 +57,12 @@ func (p *Playlist) tryToRegisterRoom() {
 				p.pushAll(clients)
 			} else {
 				lp.Send(clients[0].UID, map[string]interface{}{
-					"room":   roomUID,
-					"status": 0,
+					"room_uid": roomUID,
+					"status":   0,
 				})
 				lp.Send(clients[1].UID, map[string]interface{}{
-					"room":   roomUID,
-					"status": 0,
+					"room_uid": roomUID,
+					"status":   0,
 				})
 			}
 		}
