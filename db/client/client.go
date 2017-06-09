@@ -11,8 +11,9 @@ type Client struct {
 }
 
 var (
-	insert *sqlsugar.InsertQuery
-	find   *sqlsugar.SelectQuery
+	insert    *sqlsugar.InsertQuery
+	findByUID *sqlsugar.SelectQuery
+	findByID  *sqlsugar.SelectQuery
 )
 
 func init() {
@@ -21,14 +22,32 @@ func init() {
 		panic(insert.Error())
 	}
 
-	find = sqlsugar.Select((*Client)(nil)).From([]string{"clients"}).Where("uid = ?")
-	if find.Error() != nil {
-		panic(find.Error())
+	findByUID = sqlsugar.Select((*Client)(nil)).From([]string{"clients"}).Where("uid = ?")
+	if findByUID.Error() != nil {
+		panic(findByUID.Error())
+	}
+
+	findByID = sqlsugar.Select((*Client)(nil)).From([]string{"clients"}).Where("id = ?")
+	if findByID.Error() != nil {
+		panic(findByID.Error())
 	}
 }
 
+func FindByID(id int64) (*Client, error) {
+	i, err := findByID.QueryRow(nil, id)
+	if err != nil {
+		return nil, err
+	}
+
+	var client *Client
+	if i != nil {
+		client = i.(*Client)
+	}
+	return client, nil
+}
+
 func FindByUID(uid string) (*Client, error) {
-	i, err := find.QueryRow(nil, uid)
+	i, err := findByUID.QueryRow(nil, uid)
 	if err != nil {
 		return nil, err
 	}

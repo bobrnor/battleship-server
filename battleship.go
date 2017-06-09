@@ -8,14 +8,17 @@ import (
 	"git.nulana.com/bobrnor/battleship-server/auth"
 	_ "git.nulana.com/bobrnor/battleship-server/db"
 	"git.nulana.com/bobrnor/battleship-server/game/confirm"
+	"git.nulana.com/bobrnor/battleship-server/game/longpoll"
 	"git.nulana.com/bobrnor/battleship-server/game/search"
+	"git.nulana.com/bobrnor/battleship-server/game/start"
+	"git.nulana.com/bobrnor/battleship-server/game/turn"
 )
 
 func main() {
 	configLogger()
 	mux := configMux()
 	server := configServer(mux)
-	start(server)
+	startServer(server)
 }
 
 func configLogger() {
@@ -28,6 +31,9 @@ func configMux() *http.ServeMux {
 	mux.HandleFunc("/auth", auth.Handler())
 	mux.HandleFunc("/game/search", search.Handler())
 	mux.HandleFunc("/game/confirm", confirm.Handler())
+	mux.HandleFunc("/game/start", start.Handler())
+	mux.HandleFunc("/game/turn", turn.Handler())
+	mux.HandleFunc("/game/longpoll", longpoll.Handler())
 	return mux
 }
 
@@ -39,7 +45,7 @@ func configServer(mux *http.ServeMux) *http.Server {
 	return &server
 }
 
-func start(server *http.Server) {
+func startServer(server *http.Server) {
 	zap.S().Infow("Battleship server started")
 	if err := server.ListenAndServe(); err != nil {
 		zap.S().Fatalw("Listen and server failed",
