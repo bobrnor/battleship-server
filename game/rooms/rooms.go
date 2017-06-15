@@ -74,9 +74,8 @@ func (r *Rooms) Register(clients []client.Client) (string, error) {
 func (r *Rooms) dispatcherLoop() {
 	for range time.Tick(dispatcherTick) {
 		zap.S().Info("Dispatcher tick")
-		// TODO:
-		//if err := room.FailUnconfirmed(nil, confirmationTimeout); err != nil {
-		//	zap.S().Errorf("Can't delete unconfirmed rooms %+v", err.Error())
-		//}
+		if err := room.FailUnconfirmed(nil, confirmationTimeout); err != nil {
+			zap.S().Errorf("Can't delete unconfirmed rooms %+v", err.Error())
+		}
 	}
 }

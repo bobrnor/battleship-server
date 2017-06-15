@@ -53,7 +53,7 @@ func init() {
 		panic(update.Error())
 	}
 
-	fail = sqlsugar.UpdateMultiple([]string{"rooms, room_clients, clients"}).Set([]string{"rooms.state"}).Where("WHERE room_clients.room_id = rooms.id AND room_clients.confirmed = 0 AND DATE_ADD(rooms.ts, INTERVAL 360 SECOND) < UTC_TIMESTAMP()")
+	fail = sqlsugar.UpdateMultiple([]string{"rooms", "room_clients", "clients"}).Set([]string{"rooms.state"}).Where("room_clients.room_id = rooms.id AND room_clients.confirmed = 0 AND DATE_ADD(rooms.ts, INTERVAL ? SECOND) < UTC_TIMESTAMP()")
 	if fail.Error() != nil {
 		panic(fail.Error())
 	}
@@ -91,7 +91,10 @@ func FindByUID(tx *sql.Tx, uid string) (*Room, error) {
 }
 
 func FailUnconfirmed(tx *sql.Tx, timeout time.Duration) error {
-	_, err := fail.Exec(tx, InitialState, InitialState, timeout/time.Second)
+	room := &Room{
+		State: FailedState,
+	}
+	_, err := fail.Exec(tx, room, timeout/time.Second)
 	return err
 }
 
