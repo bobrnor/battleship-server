@@ -13,12 +13,12 @@ import (
 type Playlist struct {
 	sync.Mutex
 
-	playersLookingForOpponent map[string]*client.Client
+	playersLookingForOpponent map[string]client.Client
 }
 
 func NewPlaylist(lp *longpoll.Longpoll) *Playlist {
 	p := Playlist{
-		playersLookingForOpponent: map[string]*client.Client{},
+		playersLookingForOpponent: map[string]client.Client{},
 	}
 	lp.SetPurgeFunc(p.purgeFunc)
 	return &p
@@ -28,10 +28,9 @@ func (p *Playlist) Push(c *client.Client) {
 	zap.S().Infof("pushing client %+v", c)
 
 	p.Lock()
-	p.playersLookingForOpponent[c.UID] = c
-	p.Unlock()
-
+	p.playersLookingForOpponent[c.UID] = *c
 	p.tryToRegisterRoom()
+	p.Unlock()
 }
 
 func (p *Playlist) purgeFunc(lp *longpoll.Longpoll, i interface{}) {
@@ -69,12 +68,9 @@ func (p *Playlist) tryToRegisterRoom() {
 	}
 }
 
-func (p *Playlist) pop2() []*client.Client {
-	p.Lock()
-	defer p.Unlock()
-
+func (p *Playlist) pop2() []client.Client {
 	if len(p.playersLookingForOpponent) > 1 {
-		clients := []*client.Client{}
+		clients := []client.Client{}
 		for uid, c := range p.playersLookingForOpponent {
 			clients = append(clients, c)
 			delete(p.playersLookingForOpponent, uid)
@@ -84,13 +80,11 @@ func (p *Playlist) pop2() []*client.Client {
 		}
 		return clients
 	}
-	return []*client.Client{}
+	return []client.Client{}
 }
 
-func (p *Playlist) pushAll(clients []*client.Client) {
-	p.Lock()
+func (p *Playlist) pushAll(clients []client.Client) {
 	for _, c := range clients {
 		p.playersLookingForOpponent[c.UID] = c
 	}
-	p.Unlock()
 }

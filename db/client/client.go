@@ -11,9 +11,10 @@ type Client struct {
 }
 
 var (
-	insert    *sqlsugar.InsertQuery
-	findByUID *sqlsugar.SelectQuery
-	findByID  *sqlsugar.SelectQuery
+	insert       *sqlsugar.InsertQuery
+	findByUID    *sqlsugar.SelectQuery
+	findByID     *sqlsugar.SelectQuery
+	findByRoomID *sqlsugar.SelectQuery
 )
 
 func init() {
@@ -30,6 +31,11 @@ func init() {
 	findByID = sqlsugar.Select((*Client)(nil)).From([]string{"clients"}).Where("id = ?")
 	if findByID.Error() != nil {
 		panic(findByID.Error())
+	}
+
+	findByRoomID = sqlsugar.Select((*Client)(nil)).From([]string{"clients", "room_clients"}).Where("room_clients.room_id = ? && clients.id = room_clients.client_id")
+	if findByRoomID.Error() != nil {
+		panic(findByRoomID.Error())
 	}
 }
 
@@ -57,6 +63,19 @@ func FindByUID(uid string) (*Client, error) {
 		client = i.(*Client)
 	}
 	return client, nil
+}
+
+func FindByRoomID(roomID int64) ([]Client, error) {
+	i, err := findByRoomID.Query(nil, roomID)
+	if err != nil {
+		return nil, err
+	}
+
+	var c []Client
+	if i != nil {
+		c = i.([]Client)
+	}
+	return c, nil
 }
 
 func (c *Client) Save() error {

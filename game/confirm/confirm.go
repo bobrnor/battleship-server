@@ -95,12 +95,20 @@ func (h *handler) fetchRoom() {
 		return
 	}
 
-	if r.ClientID1 != h.c.ID && r.ClientID2 != h.c.ID {
-		h.err = errors.New("Founded room is not for that client")
+	clients, err := r.Clients(nil)
+	if err != nil {
+		h.err = err
 		return
 	}
 
-	h.r = r
+	for _, client := range clients {
+		if client.ID == h.c.ID {
+			h.r = r
+			return
+		}
+	}
+
+	h.err = errors.New("Founded room is not for that client")
 }
 
 func (h *handler) confirm() {
@@ -108,13 +116,7 @@ func (h *handler) confirm() {
 		return
 	}
 
-	if h.r.ClientID1 == h.c.ID {
-		h.r.Client1State = room.ConfirmedState
-	} else if h.r.ClientID2 == h.c.ID {
-		h.r.Client2State = room.ConfirmedState
-	}
-
-	if err := h.r.Save(nil); err != nil {
+	if err := h.r.Confirm(nil, h.c); err != nil {
 		h.err = err
 	}
 }

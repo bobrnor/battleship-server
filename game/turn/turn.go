@@ -110,21 +110,22 @@ func (h *handler) performTurn() {
 
 	// use game engine
 
-	var otherClientID int64
-	if h.r.ClientID1 == h.c.ID {
-		otherClientID = h.r.ClientID2
-	} else {
-		otherClientID = h.r.ClientID1
-	}
-
-	otherClient, err := client.FindByID(otherClientID)
+	clients, err := h.r.Clients(nil)
 	if err != nil {
 		h.err = err
 		return
 	}
 
+	var otherClient *client.Client
+	for _, c := range clients {
+		if h.c.ID != c.ID {
+			otherClient = h.c
+			break
+		}
+	}
+
 	if otherClient == nil {
-		h.err = errors.Errorf("opponent client not found %+v", otherClientID)
+		h.err = errors.Errorf("opponent client not found %+v", otherClient)
 		return
 	}
 
