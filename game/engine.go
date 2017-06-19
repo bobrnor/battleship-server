@@ -13,15 +13,8 @@ const (
 	TurnResultHit
 )
 
-var (
-	engine *Engine
-)
-
-func DefaultEngine() *Engine {
-	if engine == nil {
-		engine = &Engine{}
-	}
-	return engine
+func NewEngine() *Engine {
+	return &Engine{}
 }
 
 func (e *Engine) SetGrid(room *db.Room, client *db.Client, gridData [13]uint8) error {

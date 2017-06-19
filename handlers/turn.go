@@ -109,7 +109,7 @@ func (h *turnHandler) doTurn() {
 		return
 	}
 
-	engine := game.DefaultEngine()
+	engine := game.MainEngine()
 	if result, err := engine.Turn(h.r, h.c, h.p.X, h.p.Y); err != nil {
 		h.err = err
 	} else {

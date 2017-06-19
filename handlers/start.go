@@ -106,7 +106,7 @@ func (h *startHandler) notifyEngine() {
 		return
 	}
 
-	engine := game.DefaultEngine()
+	engine := game.MainEngine()
 	if err := engine.SetGrid(h.r, h.c, h.p.Grid); err != nil {
 		h.err = err
 	}

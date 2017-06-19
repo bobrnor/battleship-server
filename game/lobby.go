@@ -11,25 +11,16 @@ import (
 type Lobby struct {
 	sync.Mutex
 	clients map[interface{}]db.Client
-	rooms   *Rooms
 }
 
 const (
 	RoomFoundMessage = "room_found"
 )
 
-var (
-	lobby *Lobby
-)
-
-func MainLobby() *Lobby {
-	if lobby == nil {
-		lobby = &Lobby{
-			clients: map[interface{}]db.Client{},
-			rooms:   &Rooms{},
-		}
+func NewLobby() *Lobby {
+	return &Lobby{
+		clients: map[interface{}]db.Client{},
 	}
-	return lobby
 }
 
 func (l *Lobby) StartWaitingForRoom(client *db.Client) {
@@ -55,7 +46,7 @@ func (l *Lobby) createRoom() {
 	zap.S().Infof("trying to regiter room")
 
 	clients := l.fetchClientsForRoom()
-	if roomUID, err := l.rooms.Register(clients); err != nil {
+	if roomUID, err := MainRooms().Register(clients); err != nil {
 		zap.S().Errorf("Can't register room %+v", err)
 	} else {
 		msg := map[string]interface{}{
