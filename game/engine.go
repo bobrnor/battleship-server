@@ -2,6 +2,7 @@ package game
 
 import (
 	"git.nulana.com/bobrnor/battleship-server/db"
+	"github.com/pkg/errors"
 )
 
 type TurnResult uint8
@@ -17,7 +18,17 @@ func NewEngine() *Engine {
 	return &Engine{}
 }
 
-func (e *Engine) SetGrid(room *db.Room, client *db.Client, gridData [13]uint8) error {
+func (e *Engine) SetGrid(dbRoom *db.Room, client *db.Client, gridData [13]uint8) error {
+	rooms := MainRooms()
+	room := rooms.Room(dbRoom.UID)
+	if room == nil {
+		return errors.Errorf("Room not found")
+	}
+
+	if err := room.SetGrid(client, gridData); err != nil {
+		return err
+	}
+
 	return nil
 }
 
