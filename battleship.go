@@ -5,13 +5,8 @@ import (
 
 	"go.uber.org/zap"
 
-	"git.nulana.com/bobrnor/battleship-server/auth"
 	_ "git.nulana.com/bobrnor/battleship-server/db"
-	"git.nulana.com/bobrnor/battleship-server/game/confirm"
-	"git.nulana.com/bobrnor/battleship-server/game/longpoll"
-	"git.nulana.com/bobrnor/battleship-server/game/search"
-	"git.nulana.com/bobrnor/battleship-server/game/start"
-	"git.nulana.com/bobrnor/battleship-server/game/turn"
+	"git.nulana.com/bobrnor/battleship-server/handlers"
 )
 
 func main() {
@@ -28,12 +23,12 @@ func configLogger() {
 
 func configMux() *http.ServeMux {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/auth", auth.Handler())
-	mux.HandleFunc("/game/search", search.Handler())
-	mux.HandleFunc("/game/confirm", confirm.Handler())
-	mux.HandleFunc("/game/start", start.Handler())
-	mux.HandleFunc("/game/turn", turn.Handler())
-	mux.HandleFunc("/game/longpoll", longpoll.Handler())
+	mux.HandleFunc("/auth", handlers.AuthHandler())
+	mux.HandleFunc("/game/search", handlers.SearchHandler())
+	//mux.HandleFunc("/game/confirm", handlers.ConfirmHandler())
+	mux.HandleFunc("/game/start", handlers.StartHandler())
+	mux.HandleFunc("/game/turn", handlers.TurnHandler())
+	mux.HandleFunc("/game/longpoll", handlers.LongpollHandler())
 	return mux
 }
 

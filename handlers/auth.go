@@ -1,4 +1,4 @@
-package auth
+package handlers
 
 import (
 	"fmt"
@@ -8,39 +8,39 @@ import (
 
 	"go.uber.org/zap"
 
-	"git.nulana.com/bobrnor/battleship-server/db/client"
+	"git.nulana.com/bobrnor/battleship-server/db"
 	json "git.nulana.com/bobrnor/json.git"
 )
 
-type params struct {
+type authParams struct {
 	ClientUID string `json:"client_uid"`
 }
 
-type handler struct {
-	p      *params
-	client *client.Client
+type authHandler struct {
+	p      *authParams
+	client *db.Client
 
 	err error
 }
 
-func Handler() http.HandlerFunc {
-	return json.Decorate(handle, (*params)(nil))
+func AuthHandler() http.HandlerFunc {
+	return json.Decorate(handleAuth, (*authParams)(nil))
 }
 
-func handle(i interface{}) interface{} {
+func handleAuth(i interface{}) interface{} {
 	zap.S().Info("Received", i)
-	h := handler{}
-	return h.handle(i)
+	h := authHandler{}
+	return h.handleAuth(i)
 }
 
-func (h *handler) handle(i interface{}) interface{} {
+func (h *authHandler) handleAuth(i interface{}) interface{} {
 	h.fetchParams(i)
 	h.authClient()
 	return h.response()
 }
 
-func (h *handler) fetchParams(i interface{}) {
-	p, ok := i.(*params)
+func (h *authHandler) fetchParams(i interface{}) {
+	p, ok := i.(*authParams)
 	if !ok {
 		h.err = errors.WithStack(fmt.Errorf("Wrong parameters type %T %v", i, i))
 		return
@@ -54,7 +54,7 @@ func (h *handler) fetchParams(i interface{}) {
 	h.p = p
 }
 
-func (h *handler) authClient() {
+func (h *authHandler) authClient() {
 	if h.err != nil {
 		return
 	}
@@ -67,12 +67,12 @@ func (h *handler) authClient() {
 	h.client = c
 }
 
-func (h *handler) fetchClient() *client.Client {
+func (h *authHandler) fetchClient() *db.Client {
 	if h.err != nil {
 		return nil
 	}
 
-	c, err := client.FindByUID(h.p.ClientUID)
+	c, err := db.FindClientByUID(h.p.ClientUID)
 	if err != nil {
 		h.err = err
 		return nil
@@ -81,15 +81,15 @@ func (h *handler) fetchClient() *client.Client {
 	return c
 }
 
-func (h *handler) createNewClient() *client.Client {
+func (h *authHandler) createNewClient() *db.Client {
 	if h.err != nil {
 		return nil
 	}
 
-	newClient := client.Client{
+	newClient := db.Client{
 		UID: h.p.ClientUID,
 	}
-	if err := newClient.Save(); err != nil {
+	if err := newClient.Save(nil); err != nil {
 		h.err = err
 		return nil
 	}
@@ -97,7 +97,7 @@ func (h *handler) createNewClient() *client.Client {
 	return &newClient
 }
 
-func (h *handler) response() interface{} {
+func (h *authHandler) response() interface{} {
 	status := 0
 	if h.err != nil {
 		zap.S().Errorf("Error %+v", h.err)
