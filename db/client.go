@@ -13,10 +13,11 @@ type Client struct {
 }
 
 var (
-	insertClient       *sqlsugar.InsertQuery
-	findClientByUID    *sqlsugar.SelectQuery
-	findClientByID     *sqlsugar.SelectQuery
-	findClientByRoomID *sqlsugar.SelectQuery
+	insertClient        *sqlsugar.InsertQuery
+	findClientByUID     *sqlsugar.SelectQuery
+	findClientByID      *sqlsugar.SelectQuery
+	findClientByRoomID  *sqlsugar.SelectQuery
+	findClientByRoomUID *sqlsugar.SelectQuery
 )
 
 func init() {
@@ -38,6 +39,11 @@ func init() {
 	findClientByRoomID = sqlsugar.Select((*Client)(nil)).From([]string{"clients", "room_clients"}).Where("room_clients.room_id = ? && clients.id = room_clients.client_id")
 	if findClientByRoomID.Error() != nil {
 		panic(findClientByRoomID.Error())
+	}
+
+	findClientByRoomUID = sqlsugar.Select((*Client)(nil)).From([]string{"clients", "rooms", "room_clients"}).Where("rooms.uid = ? AND room_clients.room_id = rooms.id && clients.id = room_clients.client_id")
+	if findClientByRoomUID.Error() != nil {
+		panic(findClientByRoomUID.Error())
 	}
 }
 
@@ -69,6 +75,19 @@ func FindClientByUID(uid string) (*Client, error) {
 
 func FindClientByRoomID(roomID int64) ([]Client, error) {
 	i, err := findClientByRoomID.Query(nil, roomID)
+	if err != nil {
+		return nil, err
+	}
+
+	var c []Client
+	if i != nil {
+		c = i.([]Client)
+	}
+	return c, nil
+}
+
+func FindClientByRoomUID(roomUID string) ([]Client, error) {
+	i, err := findClientByRoomUID.Query(nil, roomUID)
 	if err != nil {
 		return nil, err
 	}

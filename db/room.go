@@ -24,8 +24,8 @@ type RoomClient struct {
 }
 
 const (
-	InitialState = iota
-	ReadyState   = iota
+	RoomStateInitial = iota
+	RoomStateReady
 )
 
 var (

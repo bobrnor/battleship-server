@@ -50,7 +50,7 @@ func (r *Rooms) Register(clients []db.Client) (string, error) {
 
 	room := db.Room{
 		UID:   uuid.TimeOrderedUUID(),
-		State: db.InitialState,
+		State: db.RoomStateInitial,
 		TS:    time.Now().UTC(),
 	}
 
