@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"git.nulana.com/bobrnor/battleship-server/db"
 	"git.nulana.com/bobrnor/battleship-server/core"
+	"git.nulana.com/bobrnor/battleship-server/db"
 	json "git.nulana.com/bobrnor/json.git"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
@@ -39,7 +39,7 @@ func (h *startHandler) handleStart(i interface{}) interface{} {
 	h.fetchParams(i)
 	h.fetchClient()
 	h.fetchRoom()
-	h.notifyEngine()
+	h.setGrid()
 	return h.response()
 }
 
@@ -101,7 +101,7 @@ func (h *startHandler) fetchRoom() {
 	h.r = r
 }
 
-func (h *startHandler) notifyEngine() {
+func (h *startHandler) setGrid() {
 	if h.err != nil {
 		return
 	}
