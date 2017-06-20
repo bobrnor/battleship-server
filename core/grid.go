@@ -1,4 +1,4 @@
-package game
+package core
 
 type TurnResult uint8
 

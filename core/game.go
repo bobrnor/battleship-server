@@ -1,4 +1,4 @@
-package game
+package core
 
 var (
 	rooms  *Rooms

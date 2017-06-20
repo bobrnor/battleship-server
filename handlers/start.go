@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"git.nulana.com/bobrnor/battleship-server/db"
-	"git.nulana.com/bobrnor/battleship-server/game"
+	"git.nulana.com/bobrnor/battleship-server/core"
 	json "git.nulana.com/bobrnor/json.git"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
@@ -106,7 +106,7 @@ func (h *startHandler) notifyEngine() {
 		return
 	}
 
-	engine := game.MainEngine()
+	engine := core.MainEngine()
 	if err := engine.SetGrid(h.r, h.c, h.p.Grid); err != nil {
 		h.err = err
 	}

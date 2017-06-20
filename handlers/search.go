@@ -9,7 +9,7 @@ import (
 	"github.com/pkg/errors"
 
 	"git.nulana.com/bobrnor/battleship-server/db"
-	"git.nulana.com/bobrnor/battleship-server/game"
+	"git.nulana.com/bobrnor/battleship-server/core"
 	json "git.nulana.com/bobrnor/json.git"
 )
 
@@ -85,7 +85,7 @@ func (h *searchHandler) addClientToLobby() {
 		return
 	}
 
-	lobby := game.MainLobby()
+	lobby := core.MainLobby()
 	lobby.StartWaitingForRoom(h.c)
 }
 

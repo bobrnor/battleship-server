@@ -1,4 +1,4 @@
-package game
+package core
 
 import (
 	"git.nulana.com/bobrnor/battleship-server/db"

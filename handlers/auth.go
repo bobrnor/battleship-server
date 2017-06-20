@@ -8,6 +8,7 @@ import (
 
 	"go.uber.org/zap"
 
+	"git.nulana.com/bobrnor/battleship-server/core"
 	"git.nulana.com/bobrnor/battleship-server/db"
 	json "git.nulana.com/bobrnor/json.git"
 )
@@ -59,42 +60,13 @@ func (h *authHandler) authClient() {
 		return
 	}
 
-	c := h.fetchClient()
-	if c == nil {
-		c = h.createNewClient()
+	c, err := core.AuthClient(h.p.ClientUID)
+	if err != nil {
+		h.err = err
+		return
 	}
 
 	h.client = c
-}
-
-func (h *authHandler) fetchClient() *db.Client {
-	if h.err != nil {
-		return nil
-	}
-
-	c, err := db.FindClientByUID(h.p.ClientUID)
-	if err != nil {
-		h.err = err
-		return nil
-	}
-
-	return c
-}
-
-func (h *authHandler) createNewClient() *db.Client {
-	if h.err != nil {
-		return nil
-	}
-
-	newClient := db.Client{
-		UID: h.p.ClientUID,
-	}
-	if err := newClient.Save(nil); err != nil {
-		h.err = err
-		return nil
-	}
-
-	return &newClient
 }
 
 func (h *authHandler) response() interface{} {

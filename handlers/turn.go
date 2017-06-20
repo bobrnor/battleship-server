@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"git.nulana.com/bobrnor/battleship-server/db"
-	"git.nulana.com/bobrnor/battleship-server/game"
+	"git.nulana.com/bobrnor/battleship-server/core"
 	json "git.nulana.com/bobrnor/json.git"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
@@ -23,7 +23,7 @@ type turnHandler struct {
 	c *db.Client
 	r *db.Room
 
-	result game.TurnResult
+	result core.TurnResult
 
 	err error
 }
@@ -109,7 +109,7 @@ func (h *turnHandler) doTurn() {
 		return
 	}
 
-	engine := game.MainEngine()
+	engine := core.MainEngine()
 	if result, err := engine.Turn(h.r, h.c, h.p.X, h.p.Y); err != nil {
 		h.err = err
 	} else {
