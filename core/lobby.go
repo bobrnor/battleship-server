@@ -46,19 +46,23 @@ func (l *Lobby) createRoom() {
 	zap.S().Infof("trying to regiter room")
 
 	clients := l.fetchClientsForRoom()
-	if roomUID, err := MainRooms().Register(clients); err != nil {
+	rooms := MainRooms()
+
+	roomUID, err := rooms.Register(clients)
+	if err != nil {
 		zap.S().Errorf("Can't register room %+v", err)
-	} else {
-		msg := map[string]interface{}{
-			"msg":      RoomFoundMessage,
-			"room_uid": roomUID,
-			"status":   0,
-		}
-		if err := l.notifyClients(clients, msg); err != nil {
-			zap.S().Errorf("Can't send notify clients about founded room %+v", err)
-		}
-		l.removeClients(clients)
+		return
 	}
+
+	msg := map[string]interface{}{
+		"msg":      RoomFoundMessage,
+		"room_uid": roomUID,
+		"status":   0,
+	}
+	if err := l.notifyClients(clients, msg); err != nil {
+		zap.S().Errorf("Can't send notify clients about founded room %+v", err)
+	}
+	l.removeClients(clients)
 }
 
 func (l *Lobby) fetchClientsForRoom() []db.Client {
