@@ -24,11 +24,10 @@ func configLogger() {
 func configMux() *http.ServeMux {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/auth", handlers.AuthHandler())
-	mux.HandleFunc("/core/search", handlers.SearchHandler())
-	//mux.HandleFunc("/core/confirm", handlers.ConfirmHandler())
-	mux.HandleFunc("/core/start", handlers.StartHandler())
-	mux.HandleFunc("/core/turn", handlers.TurnHandler())
-	mux.HandleFunc("/core/longpoll", handlers.LongpollHandler())
+	mux.HandleFunc("/game/search", handlers.SearchHandler())
+	mux.HandleFunc("/game/start", handlers.StartHandler())
+	mux.HandleFunc("/game/turn", handlers.TurnHandler())
+	mux.HandleFunc("/game/longpoll", handlers.LongpollHandler())
 	return mux
 }
 
