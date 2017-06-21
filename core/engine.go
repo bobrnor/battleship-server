@@ -42,17 +42,9 @@ func (e *Engine) Turn(dbRoom *db.Room, client *db.Client, x, y uint) (TurnResult
 		return TurnResultMiss, err
 	}
 
-	if opponentGrid == nil {
-		return TurnResultMiss, errors.Errorf("Opponent grid not found")
-	}
-
 	opponent, err := room.Opponent(client)
 	if err != nil {
 		return TurnResultMiss, err
-	}
-
-	if opponent == nil {
-		return TurnResultMiss, errors.Errorf("Opponent not found")
 	}
 
 	longpoll.DefaultLongpoll().Send(opponent.UID, map[string]interface{}{

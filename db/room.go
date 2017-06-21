@@ -80,7 +80,7 @@ func FindRoomByUID(tx *sql.Tx, uid string) (*Room, error) {
 
 func (r *Room) Clients(tx *sql.Tx) ([]Client, error) {
 	if len(r.clients) == 0 {
-		clients, err := FindClientByRoomID(r.ID)
+		clients, err := FindClientsByRoomID(r.ID)
 		if err != nil {
 			return r.clients, err
 		}

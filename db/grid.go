@@ -15,10 +15,11 @@ type Grid struct {
 }
 
 var (
-	insertGrid  *sqlsugar.InsertQuery
-	updateGrid  *sqlsugar.UpdateQuery
-	findGrid    *sqlsugar.SelectQuery
-	findAllGrid *sqlsugar.SelectQuery
+	insertGrid       *sqlsugar.InsertQuery
+	updateGrid       *sqlsugar.UpdateQuery
+	findGrid         *sqlsugar.SelectQuery
+	findOpponentGrid *sqlsugar.SelectQuery
+	findAllGrid      *sqlsugar.SelectQuery
 )
 
 func init() {
@@ -37,6 +38,11 @@ func init() {
 		panic(findGrid.Error())
 	}
 
+	findOpponentGrid = sqlsugar.Select((*Grid)(nil)).From([]string{"grids"}).Where("room_id = ? AND client_id != ?")
+	if findOpponentGrid.Error() != nil {
+		panic(findOpponentGrid.Error())
+	}
+
 	findAllGrid = sqlsugar.Select((*Grid)(nil)).From([]string{"grids"}).Where("room_id = ?")
 	if findGrid.Error() != nil {
 		panic(findGrid.Error())
@@ -51,15 +57,20 @@ func FindGridByRoomAndClient(tx *sql.Tx, roomID, clientID int64) (*Grid, error) 
 	return i.(*Grid), nil
 }
 
+func FindGridByRoomAndNotClient(tx *sql.Tx, roomID, clientID int64) (*Grid, error) {
+	i, err := findOpponentGrid.QueryRow(tx, roomID, clientID)
+	if err != nil {
+		return nil, err
+	}
+	return i.(*Grid), nil
+}
+
 func FindGridsByRoom(tx *sql.Tx, roomID int64) ([]Grid, error) {
 	i, err := findGrid.Query(tx, roomID)
 	if err != nil {
 		return nil, err
 	}
-	if i != nil {
-		return i.([]Grid), nil
-	}
-	return nil, nil
+	return i.([]Grid), nil
 }
 
 func (g *Grid) Save(tx *sql.Tx) error {

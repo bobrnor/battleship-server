@@ -41,7 +41,7 @@ func (r *Room) SetGrid(client *db.Client, gridData [13]uint8) error {
 }
 
 func (r *Room) Opponent(client *db.Client) (*db.Client, error) {
-	clients, err := db.FindClientByRoomUID(r.uid)
+	clients, err := db.FindClientsByRoomUID(r.uid)
 	if err != nil {
 		return nil, err
 	}
