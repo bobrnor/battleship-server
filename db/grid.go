@@ -48,10 +48,7 @@ func FindGridByRoomAndClient(tx *sql.Tx, roomID, clientID int64) (*Grid, error) 
 	if err != nil {
 		return nil, err
 	}
-	if i != nil {
-		return i.(*Grid), nil
-	}
-	return nil, nil
+	return i.(*Grid), nil
 }
 
 func FindGridsByRoom(tx *sql.Tx, roomID int64) ([]Grid, error) {

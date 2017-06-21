@@ -75,10 +75,7 @@ func FindRoomByUID(tx *sql.Tx, uid string) (*Room, error) {
 	if err != nil {
 		return nil, err
 	}
-	if i != nil {
-		return i.(*Room), nil
-	}
-	return nil, nil
+	return i.(*Room), nil
 }
 
 func (r *Room) Clients(tx *sql.Tx) ([]Client, error) {

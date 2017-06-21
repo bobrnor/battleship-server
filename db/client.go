@@ -52,12 +52,7 @@ func FindClientByID(id int64) (*Client, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	var client *Client
-	if i != nil {
-		client = i.(*Client)
-	}
-	return client, nil
+	return i.(*Client), nil
 }
 
 func FindClientByUID(uid string) (*Client, error) {
@@ -65,12 +60,7 @@ func FindClientByUID(uid string) (*Client, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	var client *Client
-	if i != nil {
-		client = i.(*Client)
-	}
-	return client, nil
+	return i.(*Client), nil
 }
 
 func FindClientByRoomID(roomID int64) ([]Client, error) {
