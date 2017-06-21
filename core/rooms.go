@@ -18,13 +18,8 @@ type Rooms struct {
 	rooms map[string]*Room
 }
 
-const (
-//dispatcherTick      = 5 * time.Second
-//confirmationTimeout = 10 * time.Minute
-)
-
 var (
-	WrongClientNumber = errors.New("Wrang client numbers")
+	WrongClientNumber = errors.New("Wrong client numbers")
 )
 
 func NewRooms() *Rooms {
@@ -83,12 +78,3 @@ func (r *Rooms) Room(uid string) *Room {
 
 	return room
 }
-
-//func (r *Rooms) dispatcherLoop() {
-//	for range time.Tick(dispatcherTick) {
-//		zap.S().Info("Dispatcher tick")
-//		if err := db.FailUnconfirmedRooms(nil, confirmationTimeout); err != nil {
-//			zap.S().Errorf("Can't delete unconfirmed rooms %+v", err.Error())
-//		}
-//	}
-//}

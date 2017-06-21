@@ -40,38 +40,6 @@ func (r *Room) SetGrid(client *db.Client, gridData [13]uint8) error {
 	return r.updateRoomState(dbEntry)
 }
 
-func (r *Room) Opponent(client *db.Client) (*db.Client, error) {
-	clients, err := db.FindClientsByRoomUID(r.uid)
-	if err != nil {
-		return nil, err
-	}
-
-	for _, c := range clients {
-		if c.ID != client.ID {
-			return &c, nil
-		}
-	}
-
-	return nil, nil
-}
-
-func (r *Room) OpponentGrid(client *db.Client) (*Grid, error) {
-	gridsEntry, err := db.FindGridsByRoom(nil, client.ID)
-	if err != nil {
-		return nil, err
-	}
-
-	for _, gridEntry := range gridsEntry {
-		if gridEntry.ClientID != client.ID {
-			return &Grid{
-				Data: gridEntry.Grid,
-			}, nil
-		}
-	}
-
-	return nil, nil
-}
-
 func (r *Room) IsReady() bool {
 	r.RLock()
 	defer r.RUnlock()

@@ -37,14 +37,18 @@ func (e *Engine) Turn(dbRoom *db.Room, client *db.Client, x, y uint) (TurnResult
 		return TurnResultMiss, errors.Errorf("Room is not ready")
 	}
 
-	opponentGrid, err := room.OpponentGrid(client)
+	opponent, err := db.FindClientByRoomIDAndNotClientID(dbRoom.ID, client.ID)
 	if err != nil {
 		return TurnResultMiss, err
 	}
 
-	opponent, err := room.Opponent(client)
+	opponentGrid, err := db.FindGridByRoomAndClient(nil, dbRoom.ID, opponent.ID)
 	if err != nil {
 		return TurnResultMiss, err
+	}
+
+	opponentGridWrapper := Grid{
+		Data: opponentGrid.Grid,
 	}
 
 	longpoll.DefaultLongpoll().Send(opponent.UID, map[string]interface{}{
@@ -52,5 +56,6 @@ func (e *Engine) Turn(dbRoom *db.Room, client *db.Client, x, y uint) (TurnResult
 		"y": y,
 	})
 
-	return opponentGrid.Turn(x, y), nil
+	return opponentGridWrapper.Turn(x, y), nil
+	return opponentGridWrapper.Turn(x, y), nil
 }
