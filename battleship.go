@@ -3,31 +3,25 @@ package main
 import (
 	"net/http"
 
-	"go.uber.org/zap"
+	"log"
 
 	_ "git.nulana.com/bobrnor/battleship-server/db"
 	"git.nulana.com/bobrnor/battleship-server/handlers"
 )
 
 func main() {
-	configLogger()
 	mux := configMux()
 	server := configServer(mux)
 	startServer(server)
 }
 
-func configLogger() {
-	logger, _ := zap.NewProduction()
-	zap.ReplaceGlobals(logger)
-}
-
 func configMux() *http.ServeMux {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/auth", handlers.AuthHandler())
+	mux.HandleFunc("/longpoll", handlers.LongpollHandler())
 	mux.HandleFunc("/game/search", handlers.SearchHandler())
 	mux.HandleFunc("/game/start", handlers.StartHandler())
 	mux.HandleFunc("/game/turn", handlers.TurnHandler())
-	mux.HandleFunc("/game/longpoll", handlers.LongpollHandler())
 	return mux
 }
 
@@ -40,10 +34,8 @@ func configServer(mux *http.ServeMux) *http.Server {
 }
 
 func startServer(server *http.Server) {
-	zap.S().Infow("Battleship server started")
+	log.Printf("Battleship server started")
 	if err := server.ListenAndServe(); err != nil {
-		zap.S().Fatalw("Listen and server failed",
-			"err", err,
-		)
+		log.Fatalf("Listen and server failed %+v", err.Error())
 	}
 }

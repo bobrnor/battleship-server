@@ -3,19 +3,16 @@ package core
 import (
 	"sync"
 
+	"log"
+
 	"git.nulana.com/bobrnor/battleship-server/db"
 	"git.nulana.com/bobrnor/longpoll.git"
-	"go.uber.org/zap"
 )
 
 type Lobby struct {
 	sync.Mutex
 	clients map[interface{}]db.Client
 }
-
-const (
-	RoomFoundMessage = "room_found"
-)
 
 func NewLobby() *Lobby {
 	return &Lobby{
@@ -24,7 +21,7 @@ func NewLobby() *Lobby {
 }
 
 func (l *Lobby) StartWaitingForRoom(client *db.Client) {
-	zap.S().Infof("adding client %+v", client)
+	log.Printf("adding client %+v", client)
 
 	l.Lock()
 	l.clients[client.UID] = *client
@@ -35,7 +32,7 @@ func (l *Lobby) StartWaitingForRoom(client *db.Client) {
 }
 
 func (l *Lobby) StopWaitingForRoom(uid interface{}) {
-	zap.S().Infof("deleting client %+v", uid)
+	log.Printf("deleting client %+v", uid)
 
 	l.Lock()
 	delete(l.clients, uid)
@@ -43,24 +40,23 @@ func (l *Lobby) StopWaitingForRoom(uid interface{}) {
 }
 
 func (l *Lobby) createRoom() {
-	zap.S().Infof("trying to regiter room")
+	log.Printf("trying to regiter room")
 
 	clients := l.fetchClientsForRoom()
 	rooms := MainRooms()
 
 	roomUID, err := rooms.Register(clients)
 	if err != nil {
-		zap.S().Errorf("Can't register room %+v", err)
+		log.Printf("Can't register room %+v", err)
 		return
 	}
 
 	msg := map[string]interface{}{
-		"msg":      RoomFoundMessage,
+		"type":     "search_result",
 		"room_uid": roomUID,
-		"status":   0,
 	}
 	if err := l.notifyClients(clients, msg); err != nil {
-		zap.S().Errorf("Can't send notify clients about founded room %+v", err)
+		log.Printf("Can't send notify clients about founded room %+v", err)
 	}
 	l.removeClients(clients)
 }

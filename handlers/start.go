@@ -4,11 +4,12 @@ import (
 	"fmt"
 	"net/http"
 
+	"log"
+
 	"git.nulana.com/bobrnor/battleship-server/core"
 	"git.nulana.com/bobrnor/battleship-server/db"
 	json "git.nulana.com/bobrnor/json.git"
 	"github.com/pkg/errors"
-	"go.uber.org/zap"
 )
 
 type startParams struct {
@@ -30,7 +31,7 @@ func StartHandler() http.HandlerFunc {
 }
 
 func handleStart(i interface{}) interface{} {
-	zap.S().Infof("handling start request %+v", i)
+	log.Printf("handling start request %+v", i)
 	h := startHandler{}
 	return h.handleStart(i)
 }
@@ -44,7 +45,7 @@ func (h *startHandler) handleStart(i interface{}) interface{} {
 }
 
 func (h *startHandler) fetchParams(i interface{}) {
-	zap.S().Infof("fetching startParams %+v", i)
+	log.Printf("fetching startParams %+v", i)
 	p, ok := i.(*startParams)
 	if !ok {
 		h.err = errors.WithStack(fmt.Errorf("Wrong parameters type %T %v", i, i))
@@ -64,7 +65,7 @@ func (h *startHandler) fetchClient() {
 		return
 	}
 
-	zap.S().Infof("fetching client %+v", h.p.ClientUID)
+	log.Printf("fetching client %+v", h.p.ClientUID)
 
 	c, err := db.FindClientByUID(h.p.ClientUID)
 	if err != nil {
@@ -85,7 +86,7 @@ func (h *startHandler) fetchRoom() {
 		return
 	}
 
-	zap.S().Infof("fetching room %+v", h.p.RoomUID)
+	log.Printf("fetching room %+v", h.p.RoomUID)
 
 	r, err := db.FindRoomByUID(nil, h.p.RoomUID)
 	if err != nil {
@@ -113,13 +114,15 @@ func (h *startHandler) setGrid() {
 }
 
 func (h *startHandler) response() interface{} {
-	status := 0
+	msg := map[string]interface{}{
+		"type": "start",
+	}
 	if h.err != nil {
-		zap.S().Errorf("Error %+v", h.err)
-		status = -1
+		log.Printf("Error %+v", h.err)
+		msg["error"] = map[string]interface{}{
+			"code": 1,
+			"msg":  h.err.Error(),
+		}
 	}
-
-	return map[string]interface{}{
-		"status": status,
-	}
+	return msg
 }

@@ -4,9 +4,10 @@ import (
 	"database/sql"
 	"time"
 
+	"log"
+
 	sqlsugar "git.nulana.com/bobrnor/sqlsugar.git"
 	"github.com/pkg/errors"
-	"go.uber.org/zap"
 )
 
 type Room struct {
@@ -100,7 +101,7 @@ func (r *Room) SetClients(tx *sql.Tx, clients []Client) error {
 		localTx = true
 		tx = newTx
 		defer sqlsugar.RollbackOnRecover(tx, func(err error) {
-			zap.S().Errorf("Error while setting room clients %+v", err.Error())
+			log.Printf("Error while setting room clients %+v", err.Error())
 		})
 	}
 

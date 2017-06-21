@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"time"
 
-	"go.uber.org/zap"
-
 	"github.com/pkg/errors"
+
+	"log"
 
 	"git.nulana.com/bobrnor/battleship-server/db"
 	json "git.nulana.com/bobrnor/json.git"
@@ -15,14 +15,14 @@ import (
 	seqqueue "git.nulana.com/bobrnor/seqqueue.git"
 )
 
-type lonpollPparams struct {
+type longpollParams struct {
 	ClientUID string `json:"client_uid"`
 	Seq       uint64 `json:"seq"`
 	Reset     bool   `json:"reset"`
 }
 
 type longpollHandler struct {
-	p *lonpollPparams
+	p *longpollParams
 	c *db.Client
 	e *seqqueue.Entry
 
@@ -34,11 +34,11 @@ const (
 )
 
 func LongpollHandler() http.HandlerFunc {
-	return json.Decorate(handleLongpoll, (*lonpollPparams)(nil))
+	return json.Decorate(handleLongpoll, (*longpollParams)(nil))
 }
 
 func handleLongpoll(i interface{}) interface{} {
-	zap.S().Infof("handling longpoll request %+v", i)
+	log.Printf("handling longpoll request %+v", i)
 	h := longpollHandler{}
 	return h.handleLongpoll(i)
 }
@@ -51,8 +51,8 @@ func (h *longpollHandler) handleLongpoll(i interface{}) interface{} {
 }
 
 func (h *longpollHandler) fetchParams(i interface{}) {
-	zap.S().Infof("fetching lonpollPparams %+v", i)
-	p, ok := i.(*lonpollPparams)
+	log.Printf("fetching longpoll params %+v", i)
+	p, ok := i.(*longpollParams)
 	if !ok {
 		h.err = errors.WithStack(fmt.Errorf("Wrong parameters type %T %v", i, i))
 		return
@@ -71,7 +71,7 @@ func (h *longpollHandler) fetchClient() {
 		return
 	}
 
-	zap.S().Infof("fetching client %+v", h.p.ClientUID)
+	log.Printf("fetching client %+v", h.p.ClientUID)
 
 	c, err := db.FindClientByUID(h.p.ClientUID)
 	if err != nil {
@@ -92,7 +92,7 @@ func (h *longpollHandler) poll() {
 		return
 	}
 
-	zap.S().Infof("polling %+v", h.c)
+	log.Printf("polling %+v", h.c)
 
 	q := longpoll.DefaultLongpoll().Register(h.p.ClientUID)
 	var c <-chan *seqqueue.Entry
@@ -109,24 +109,20 @@ func (h *longpollHandler) poll() {
 }
 
 func (h *longpollHandler) response() interface{} {
-	status := 0
-	if h.err != nil {
-		zap.S().Errorf("Error %+v", h.err)
-		status = -1
+	msg := map[string]interface{}{
+		"type": "longpoll",
 	}
-
-	var msg map[string]interface{}
-	if h.e != nil {
-		if m, ok := h.e.Value.(map[string]interface{}); !ok {
-			status = -1
-			msg = map[string]interface{}{}
-		} else {
-			msg = m
-			msg["seq"] = h.e.Seq
+	if h.err != nil {
+		log.Printf("Error %+v", h.err)
+		msg["error"] = map[string]interface{}{
+			"code": 1,
+			"msg":  h.err.Error(),
 		}
 	} else {
-		msg = map[string]interface{}{}
+		if h.e != nil {
+			msg["seq"] = h.e.Seq
+			msg["content"] = h.e.Value
+		}
 	}
-	msg["status"] = status
 	return msg
 }

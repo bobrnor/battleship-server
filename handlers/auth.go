@@ -6,7 +6,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"go.uber.org/zap"
+	"log"
 
 	"git.nulana.com/bobrnor/battleship-server/core"
 	"git.nulana.com/bobrnor/battleship-server/db"
@@ -29,7 +29,7 @@ func AuthHandler() http.HandlerFunc {
 }
 
 func handleAuth(i interface{}) interface{} {
-	zap.S().Info("Received", i)
+	log.Printf("Received %+v", i)
 	h := authHandler{}
 	return h.handleAuth(i)
 }
@@ -70,12 +70,14 @@ func (h *authHandler) authClient() {
 }
 
 func (h *authHandler) response() interface{} {
-	status := 0
+	msg := map[string]interface{}{
+		"type": "auth",
+	}
 	if h.err != nil {
-		zap.S().Errorf("Error %+v", h.err)
-		status = -1
+		msg["error"] = map[string]interface{}{
+			"code": 1,
+			"msg":  h.err.Error(),
+		}
 	}
-	return map[string]interface{}{
-		"status": status,
-	}
+	return msg
 }

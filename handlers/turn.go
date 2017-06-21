@@ -4,11 +4,12 @@ import (
 	"fmt"
 	"net/http"
 
-	"git.nulana.com/bobrnor/battleship-server/db"
+	"log"
+
 	"git.nulana.com/bobrnor/battleship-server/core"
+	"git.nulana.com/bobrnor/battleship-server/db"
 	json "git.nulana.com/bobrnor/json.git"
 	"github.com/pkg/errors"
-	"go.uber.org/zap"
 )
 
 type turnParams struct {
@@ -33,7 +34,7 @@ func TurnHandler() http.HandlerFunc {
 }
 
 func handleTurn(i interface{}) interface{} {
-	zap.S().Infof("handling turn request %+v", i)
+	log.Printf("handling turn request %+v", i)
 	h := turnHandler{}
 	return h.handleTurn(i)
 }
@@ -47,7 +48,7 @@ func (h *turnHandler) handleTurn(i interface{}) interface{} {
 }
 
 func (h *turnHandler) fetchParams(i interface{}) {
-	zap.S().Infof("fetching turnParams %+v", i)
+	log.Printf("fetching turnParams %+v", i)
 	p, ok := i.(*turnParams)
 	if !ok {
 		h.err = errors.WithStack(fmt.Errorf("Wrong parameters type %T %v", i, i))
@@ -67,7 +68,7 @@ func (h *turnHandler) fetchClient() {
 		return
 	}
 
-	zap.S().Infof("fetching client %+v", h.p.ClientUID)
+	log.Printf("fetching client %+v", h.p.ClientUID)
 
 	c, err := db.FindClientByUID(h.p.ClientUID)
 	if err != nil {
@@ -88,7 +89,7 @@ func (h *turnHandler) fetchRoom() {
 		return
 	}
 
-	zap.S().Infof("fetching room %+v", h.p.RoomUID)
+	log.Printf("fetching room %+v", h.p.RoomUID)
 
 	r, err := db.FindRoomByUID(nil, h.p.RoomUID)
 	if err != nil {
@@ -118,14 +119,22 @@ func (h *turnHandler) doTurn() {
 }
 
 func (h *turnHandler) response() interface{} {
-	resp := map[string]interface{}{}
-	if h.err != nil {
-		zap.S().Errorf("Error %+v", h.err)
-		resp["status"] = -1
-	} else {
-		resp["result"] = h.result
-		resp["status"] = 0
+	msg := map[string]interface{}{
+		"type": "turn",
 	}
-
-	return resp
+	if h.err != nil {
+		log.Printf("Error %+v", h.err)
+		msg["error"] = map[string]interface{}{
+			"code": 1,
+			"msg":  h.err.Error(),
+		}
+	} else {
+		switch h.result {
+		case core.TurnResultMiss:
+			msg["result"] = "miss"
+		case core.TurnResultHit:
+			msg["result"] = "hit"
+		}
+	}
+	return msg
 }

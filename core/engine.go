@@ -52,10 +52,10 @@ func (e *Engine) Turn(dbRoom *db.Room, client *db.Client, x, y uint) (TurnResult
 	}
 
 	longpoll.DefaultLongpoll().Send(opponent.UID, map[string]interface{}{
-		"x": x,
-		"y": y,
+		"type": "opponent_turn",
+		"x":    x,
+		"y":    y,
 	})
 
-	return opponentGridWrapper.Turn(x, y), nil
 	return opponentGridWrapper.Turn(x, y), nil
 }

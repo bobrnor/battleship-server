@@ -3,9 +3,9 @@ package core
 import (
 	"time"
 
-	"go.uber.org/zap"
-
 	"sync"
+
+	"log"
 
 	"git.nulana.com/bobrnor/battleship-server/db"
 	"git.nulana.com/bobrnor/sqlsugar.git"
@@ -29,7 +29,7 @@ func NewRooms() *Rooms {
 }
 
 func (r *Rooms) Register(clients []db.Client) (string, error) {
-	zap.S().Infof("Register %+v", clients)
+	log.Printf("Register %+v", clients)
 
 	if len(clients) != 2 {
 		return "", errors.WithStack(WrongClientNumber)
@@ -40,7 +40,7 @@ func (r *Rooms) Register(clients []db.Client) (string, error) {
 		return "", err
 	}
 	defer sqlsugar.RollbackOnRecover(tx, func(err error) {
-		zap.S().Errorf("Can't register room %+v", err.Error())
+		log.Printf("Can't register room %+v", err.Error())
 	})
 
 	room := db.Room{

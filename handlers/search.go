@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"net/http"
 
-	"go.uber.org/zap"
-
 	"github.com/pkg/errors"
 
-	"git.nulana.com/bobrnor/battleship-server/db"
+	"log"
+
 	"git.nulana.com/bobrnor/battleship-server/core"
+	"git.nulana.com/bobrnor/battleship-server/db"
 	json "git.nulana.com/bobrnor/json.git"
 )
 
@@ -31,7 +31,7 @@ func SearchHandler() http.HandlerFunc {
 }
 
 func handleSearch(i interface{}) interface{} {
-	zap.S().Infof("handling search reuqest %+v", i)
+	log.Printf("handling search reuqest %+v", i)
 	h := searchHandler{}
 	return h.handleSearch(i)
 }
@@ -44,7 +44,7 @@ func (h *searchHandler) handleSearch(i interface{}) interface{} {
 }
 
 func (h *searchHandler) fetchParams(i interface{}) {
-	zap.S().Infof("fetching searchParams %+v", i)
+	log.Printf("fetching searchParams %+v", i)
 	p, ok := i.(*searchParams)
 	if !ok {
 		h.err = errors.WithStack(fmt.Errorf("Wrong parameters type %T %v", i, i))
@@ -64,7 +64,7 @@ func (h *searchHandler) fetchClient() {
 		return
 	}
 
-	zap.S().Infof("fetching client %+v", h.p.ClientUID)
+	log.Printf("fetching client %+v", h.p.ClientUID)
 
 	c, err := db.FindClientByUID(h.p.ClientUID)
 	if err != nil {
@@ -90,14 +90,15 @@ func (h *searchHandler) addClientToLobby() {
 }
 
 func (h *searchHandler) response() interface{} {
-	status := 0
-	if h.err != nil {
-		zap.S().Errorf("Error %+v", h.err)
-		status = -1
-	}
-
 	msg := map[string]interface{}{
-		"status": status,
+		"type": "search",
+	}
+	if h.err != nil {
+		log.Printf("Error %+v", h.err)
+		msg["error"] = map[string]interface{}{
+			"code": 1,
+			"msg":  h.err.Error(),
+		}
 	}
 	return msg
 }

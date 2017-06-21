@@ -5,9 +5,10 @@ import (
 
 	"github.com/pkg/errors"
 
+	"log"
+
 	"git.nulana.com/bobrnor/battleship-server/db"
 	"git.nulana.com/bobrnor/longpoll.git"
-	"go.uber.org/zap"
 )
 
 type Room struct {
@@ -46,7 +47,7 @@ func (r *Room) IsReady() bool {
 
 	dbEntry, err := db.FindRoomByUID(nil, r.uid)
 	if err != nil {
-		zap.S().Error(err)
+		log.Printf("%+v", err.Error())
 		return false
 	}
 
@@ -78,6 +79,7 @@ func (r *Room) updateRoomState(dbEntry *db.Room) error {
 				action = "wait"
 			}
 			longpoll.DefaultLongpoll().Send(client.UID, map[string]interface{}{
+				"type":   "game",
 				"action": action,
 			})
 		}
