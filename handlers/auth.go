@@ -78,6 +78,8 @@ func (h *authHandler) response() interface{} {
 			"code": 1,
 			"msg":  h.err.Error(),
 		}
+	} else {
+		msg["client_uid"] = h.client.UID
 	}
 	return msg
 }

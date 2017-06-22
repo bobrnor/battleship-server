@@ -1,6 +1,11 @@
 package core
 
-import "git.nulana.com/bobrnor/battleship-server/db"
+import (
+	"database/sql"
+
+	"git.nulana.com/bobrnor/battleship-server/db"
+	"github.com/pkg/errors"
+)
 
 type auther struct {
 	clientUID string
@@ -26,7 +31,9 @@ func (a *auther) auth() (*db.Client, error) {
 func (a *auther) fetchClient() {
 	c, err := db.FindClientByUID(a.clientUID)
 	if err != nil {
-		a.err = err
+		if errors.Cause(err) != sql.ErrNoRows {
+			a.err = err
+		}
 		return
 	}
 	a.client = c
