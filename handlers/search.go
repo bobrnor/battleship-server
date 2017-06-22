@@ -15,8 +15,6 @@ import (
 
 type searchParams struct {
 	ClientUID string `json:"client_uid"`
-	Seq       uint64 `json:"seq"`
-	Reset     bool   `json:"reset"`
 }
 
 type searchHandler struct {

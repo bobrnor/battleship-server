@@ -15,15 +15,19 @@ type Lobby struct {
 }
 
 func NewLobby() *Lobby {
-	return &Lobby{
+	lobby := &Lobby{
 		clients: map[interface{}]db.Client{},
 	}
+	longpoll.DefaultLongpoll().SetPurgeFunc(lobby.HandleLongpollPurge)
+	return lobby
 }
 
 func (l *Lobby) StartWaitingForRoom(client *db.Client) {
 	log.Printf("adding client %+v", client)
 
 	l.Lock()
+	longpoll.DefaultLongpoll().Register(client.UID)
+
 	l.clients[client.UID] = *client
 	if len(l.clients) > 1 {
 		l.createRoom()
@@ -85,4 +89,8 @@ func (l *Lobby) removeClients(clients []db.Client) {
 	for _, c := range clients {
 		l.clients[c.UID] = c
 	}
+}
+
+func (l *Lobby) HandleLongpollPurge(lp *longpoll.Longpoll, i interface{}) {
+	l.StopWaitingForRoom(i)
 }
