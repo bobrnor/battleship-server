@@ -18,7 +18,7 @@ func NewLobby() *Lobby {
 	lobby := &Lobby{
 		clients: map[interface{}]db.Client{},
 	}
-	longpoll.DefaultLongpoll().SetPurgeFunc(lobby.HandleLongpollPurge)
+	longpoll.DefaultLongpoll().SetPurgeFunc(lobby.LongpollPurgedReceiver)
 	return lobby
 }
 
@@ -91,6 +91,6 @@ func (l *Lobby) removeClients(clients []db.Client) {
 	}
 }
 
-func (l *Lobby) HandleLongpollPurge(lp *longpoll.Longpoll, i interface{}) {
+func (l *Lobby) LongpollPurgedReceiver(lp *longpoll.Longpoll, i interface{}) {
 	l.StopWaitingForRoom(i)
 }
