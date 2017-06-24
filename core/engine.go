@@ -66,20 +66,19 @@ func (e *Engine) Turn(dbRoom *db.Room, client *db.Client, x, y uint) (TurnResult
 		result = TurnResultHit
 	}
 
-	if e.isEnded(opponentGrid) {
+	if result == TurnResultHit && e.isEnded(opponentGrid) {
+		result = TurnResultWin
 		longpoll.DefaultLongpoll().Send(opponent.UID, map[string]interface{}{
-			"type":   "game",
+			"type":   "game_over",
 			"action": "lose",
 		})
-
-		return TurnResultWin, nil
+	} else {
+		longpoll.DefaultLongpoll().Send(opponent.UID, map[string]interface{}{
+			"type": "opponent_turn",
+			"x":    x,
+			"y":    y,
+		})
 	}
-
-	longpoll.DefaultLongpoll().Send(opponent.UID, map[string]interface{}{
-		"type": "opponent_turn",
-		"x":    x,
-		"y":    y,
-	})
 
 	return result, nil
 }
