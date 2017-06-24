@@ -136,6 +136,8 @@ func (h *turnHandler) response() interface{} {
 			msg["result"] = "miss"
 		case core.TurnResultHit:
 			msg["result"] = "hit"
+		case core.TurnResultWin:
+			msg["result"] = "win"
 		}
 	}
 	return msg

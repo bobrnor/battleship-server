@@ -3,6 +3,7 @@ package db
 import (
 	"database/sql"
 
+	"git.nulana.com/bobrnor/battleship-grid.git"
 	sqlsugar "git.nulana.com/bobrnor/sqlsugar.git"
 	"github.com/pkg/errors"
 )
@@ -11,7 +12,11 @@ type Grid struct {
 	ID       int64  `column:"id"`
 	RoomID   int64  `column:"room_id"`
 	ClientID int64  `column:"client_id"`
-	Grid     []byte `column:"grid"`
+	RawGrid  []byte `column:"grid"`
+	RawHits  []byte `column:"hits"`
+
+	Grid grid.Grid
+	Hits grid.Grid
 }
 
 var (
@@ -28,7 +33,7 @@ func init() {
 		panic(insertGrid.Error())
 	}
 
-	updateGrid = sqlsugar.Update("grid").Set([]string{"grid"}).Where("room_id = ? AND client_id = ?")
+	updateGrid = sqlsugar.Update("grids").Set([]string{"grid", "hits"}).Where("id = ?")
 	if updateGrid.Error() != nil {
 		panic(updateGrid.Error())
 	}
@@ -54,7 +59,10 @@ func FindGridByRoomAndClient(tx *sql.Tx, roomID, clientID int64) (*Grid, error) 
 	if err != nil {
 		return nil, err
 	}
-	return i.(*Grid), nil
+	g := i.(*Grid)
+	copy(g.Grid[:], g.RawGrid)
+	copy(g.Hits[:], g.RawHits)
+	return g, nil
 }
 
 func FindGridByRoomAndNotClient(tx *sql.Tx, roomID, clientID int64) (*Grid, error) {
@@ -62,7 +70,10 @@ func FindGridByRoomAndNotClient(tx *sql.Tx, roomID, clientID int64) (*Grid, erro
 	if err != nil {
 		return nil, err
 	}
-	return i.(*Grid), nil
+	g := i.(*Grid)
+	copy(g.Grid[:], g.RawGrid)
+	copy(g.Hits[:], g.RawHits)
+	return g, nil
 }
 
 func FindGridsByRoom(tx *sql.Tx, roomID int64) ([]Grid, error) {
@@ -70,10 +81,21 @@ func FindGridsByRoom(tx *sql.Tx, roomID int64) ([]Grid, error) {
 	if err != nil {
 		return nil, err
 	}
-	return i.([]Grid), nil
+
+	gs := []Grid{}
+	for _, g := range i.([]Grid) {
+		copy(g.Grid[:], g.RawGrid)
+		copy(g.Hits[:], g.RawHits)
+		gs = append(gs, g)
+	}
+
+	return gs, nil
 }
 
 func (g *Grid) Save(tx *sql.Tx) error {
+	g.RawGrid = g.Grid[:]
+	g.RawHits = g.Hits[:]
+
 	if g.ID > 0 {
 		return g.updateGrid(tx)
 	} else {

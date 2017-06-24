@@ -32,7 +32,8 @@ func (r *Room) SetGrid(client *db.Client, gridData [13]byte) error {
 	grid := db.Grid{
 		RoomID:   dbEntry.ID,
 		ClientID: client.ID,
-		Grid:     gridData[:],
+		Grid:     gridData,
+		Hits:     [13]byte{},
 	}
 	if err := grid.Save(nil); err != nil {
 		return err

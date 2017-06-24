@@ -1,12 +1,22 @@
 package core
 
 import (
+	"git.nulana.com/bobrnor/battleship-grid.git"
 	"git.nulana.com/bobrnor/battleship-server/db"
 	"git.nulana.com/bobrnor/longpoll.git"
 	"github.com/pkg/errors"
 )
 
 type Engine struct{}
+
+type TurnResult uint
+
+const (
+	TurnResultMiss = TurnResult(iota)
+	TurnResultHit
+	TurnResultLose
+	TurnResultWin
+)
 
 func NewEngine() *Engine {
 	return &Engine{}
@@ -47,8 +57,23 @@ func (e *Engine) Turn(dbRoom *db.Room, client *db.Client, x, y uint) (TurnResult
 		return TurnResultMiss, err
 	}
 
-	opponentGridWrapper := Grid{}
-	copy(opponentGridWrapper.Data[:], opponentGrid.Grid[0:13])
+	if err := e.storeHit(opponentGrid, x, y); err != nil {
+		return TurnResultMiss, err
+	}
+
+	result := TurnResultMiss
+	if (&opponentGrid.Grid).Get(x, y) {
+		result = TurnResultHit
+	}
+
+	if e.isEnded(opponentGrid) {
+		longpoll.DefaultLongpoll().Send(opponent.UID, map[string]interface{}{
+			"type":   "game",
+			"action": "lose",
+		})
+
+		return TurnResultWin, nil
+	}
 
 	longpoll.DefaultLongpoll().Send(opponent.UID, map[string]interface{}{
 		"type": "opponent_turn",
@@ -56,5 +81,15 @@ func (e *Engine) Turn(dbRoom *db.Room, client *db.Client, x, y uint) (TurnResult
 		"y":    y,
 	})
 
-	return opponentGridWrapper.Turn(x, y), nil
+	return result, nil
+}
+
+func (e *Engine) storeHit(g *db.Grid, x, y uint) error {
+	(&g.Hits).Set(x, y)
+	return g.Save(nil)
+}
+
+func (e *Engine) isEnded(g *db.Grid) bool {
+	diff := grid.Diff(&g.Grid, &g.Hits)
+	return diff.IsEmpty()
 }
