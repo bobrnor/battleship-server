@@ -13,9 +13,9 @@ import (
 )
 
 type startParams struct {
-	ClientUID string    `json:"client_uid"`
-	RoomUID   string    `json:"room_uid"`
-	Grid      [13]uint8 `json:"grid"`
+	ClientUID string   `json:"client_uid"`
+	RoomUID   string   `json:"room_uid"`
+	Grid      [13]byte `json:"grid"`
 }
 
 type startHandler struct {

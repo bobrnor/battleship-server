@@ -29,7 +29,7 @@ func AuthHandler() http.HandlerFunc {
 }
 
 func handleAuth(i interface{}) interface{} {
-	log.Printf("Received %+v", i)
+	log.Printf("received %+v", i)
 	h := authHandler{}
 	return h.handleAuth(i)
 }

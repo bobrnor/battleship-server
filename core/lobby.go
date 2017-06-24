@@ -87,7 +87,7 @@ func (l *Lobby) notifyClients(clients []db.Client, msg map[string]interface{}) e
 
 func (l *Lobby) removeClients(clients []db.Client) {
 	for _, c := range clients {
-		l.clients[c.UID] = c
+		delete(l.clients, c.UID)
 	}
 }
 

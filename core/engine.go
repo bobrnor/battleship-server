@@ -12,7 +12,7 @@ func NewEngine() *Engine {
 	return &Engine{}
 }
 
-func (e *Engine) SetGrid(dbRoom *db.Room, client *db.Client, gridData [13]uint8) error {
+func (e *Engine) SetGrid(dbRoom *db.Room, client *db.Client, gridData [13]byte) error {
 	rooms := MainRooms()
 	room := rooms.Room(dbRoom.UID)
 	if room == nil {
@@ -47,9 +47,8 @@ func (e *Engine) Turn(dbRoom *db.Room, client *db.Client, x, y uint) (TurnResult
 		return TurnResultMiss, err
 	}
 
-	opponentGridWrapper := Grid{
-		Data: opponentGrid.Grid,
-	}
+	opponentGridWrapper := Grid{}
+	copy(opponentGridWrapper.Data[:], opponentGrid.Grid[0:13])
 
 	longpoll.DefaultLongpoll().Send(opponent.UID, map[string]interface{}{
 		"type": "opponent_turn",

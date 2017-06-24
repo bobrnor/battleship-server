@@ -1,9 +1,11 @@
 package core
 
+// TODO: move all grid logic outside as a packqage
+
 type TurnResult uint8
 
 type Grid struct {
-	Data [13]uint8
+	Data [13]byte
 }
 
 const (

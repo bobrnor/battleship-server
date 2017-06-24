@@ -13,10 +13,12 @@ import (
 )
 
 type turnParams struct {
-	ClientUID string `json:"client_uid"`
-	RoomUID   string `json:"room_uid"`
-	X         uint   `json:"x"`
-	Y         uint   `json:"y"`
+	ClientUID  string `json:"client_uid"`
+	RoomUID    string `json:"room_uid"`
+	Coordinate struct {
+		X uint `json:"x"`
+		Y uint `json:"y"`
+	} `json:"coord"`
 }
 
 type turnHandler struct {
@@ -111,7 +113,7 @@ func (h *turnHandler) doTurn() {
 	}
 
 	engine := core.MainEngine()
-	if result, err := engine.Turn(h.r, h.c, h.p.X, h.p.Y); err != nil {
+	if result, err := engine.Turn(h.r, h.c, h.p.Coordinate.X, h.p.Coordinate.Y); err != nil {
 		h.err = err
 	} else {
 		h.result = result

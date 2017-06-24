@@ -45,7 +45,7 @@ func (h *searchHandler) fetchParams(i interface{}) {
 	log.Printf("fetching searchParams %+v", i)
 	p, ok := i.(*searchParams)
 	if !ok {
-		h.err = errors.WithStack(fmt.Errorf("Wrong parameters type %T %v", i, i))
+		h.err = errors.WithStack(fmt.Errorf("wrong parameters type %T %v", i, i))
 		return
 	}
 

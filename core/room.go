@@ -16,7 +16,7 @@ type Room struct {
 	uid string
 }
 
-func (r *Room) SetGrid(client *db.Client, gridData [13]uint8) error {
+func (r *Room) SetGrid(client *db.Client, gridData [13]byte) error {
 	r.Lock()
 	defer r.Unlock()
 
@@ -32,7 +32,7 @@ func (r *Room) SetGrid(client *db.Client, gridData [13]uint8) error {
 	grid := db.Grid{
 		RoomID:   dbEntry.ID,
 		ClientID: client.ID,
-		Grid:     gridData,
+		Grid:     gridData[:],
 	}
 	if err := grid.Save(nil); err != nil {
 		return err

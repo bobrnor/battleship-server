@@ -8,10 +8,10 @@ import (
 )
 
 type Grid struct {
-	ID       int64     `column:"id"`
-	RoomID   int64     `column:"room_id"`
-	ClientID int64     `column:"client_id"`
-	Grid     [13]uint8 `column:"grid"`
+	ID       int64  `column:"id"`
+	RoomID   int64  `column:"room_id"`
+	ClientID int64  `column:"client_id"`
+	Grid     []byte `column:"grid"`
 }
 
 var (
@@ -66,7 +66,7 @@ func FindGridByRoomAndNotClient(tx *sql.Tx, roomID, clientID int64) (*Grid, erro
 }
 
 func FindGridsByRoom(tx *sql.Tx, roomID int64) ([]Grid, error) {
-	i, err := findGrid.Query(tx, roomID)
+	i, err := findAllGrid.Query(tx, roomID)
 	if err != nil {
 		return nil, err
 	}
