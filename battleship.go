@@ -27,7 +27,7 @@ func configMux() *http.ServeMux {
 
 func configServer(mux *http.ServeMux) *http.Server {
 	server := http.Server{
-		Addr:    "0.0.0.0:8000",
+		Addr:    "0.0.0.0:80",
 		Handler: mux,
 	}
 	return &server
