@@ -55,7 +55,7 @@ build-app:
     - cd $HOME/gopath
     - go get ...
     - cd $HOME/gopath/src/git.nulana.com/bobrnor/battleship-server/build
-    - go build -o $CURRENT_BUILD_PATH/battleship ../battleship.go
+    - GOOS=linux GOARCH=amd64 go build -o $CURRENT_BUILD_PATH/battleship ../battleship.go
 
 build-image:
   image: docker
