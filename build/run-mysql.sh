@@ -10,3 +10,4 @@ docker run -d --name battleship-db \
     --network=battleship-network \
     --ip=172.25.0.2 \
     mysql/mysql-server
+docker logs -f battleship-db
