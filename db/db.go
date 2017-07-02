@@ -11,7 +11,7 @@ import (
 )
 
 func init() {
-	if err := sqlsugar.Open("mysql", "root@tcp(battleship_mysql.1:3306)/battleship?parseTime=true"); err != nil {
+	if err := sqlsugar.Open("mysql", "root@tcp(battleship_mysql:3306)/battleship?parseTime=true"); err != nil {
 		log.Fatalf("can't open mysql connection",
 			"err", err,
 		)
